@@ -65,19 +65,28 @@ public class GestionUsuario {
 
     public void mostrarUsuarios() {
         System.out.println("Hay los siguientes usuarios en el sistema:");
-        for (Usuario usuario : listaUsuarios) {
-            System.out.println(usuario);
+        if (listaUsuarios.isEmpty()) {
+            System.out.println("No hay usuarios a mostrar");
+
+        } else {
+            for (Usuario usuario : listaUsuarios) {
+                System.out.println(usuario);
+            }
         }
     }
 
-    public void eliminarUsuarioPorId(String id) {
+    public void borrarUsuario() {
+        Scanner scannerBorrado = new Scanner(System.in); // Crear scanner local para esta operación
+
+        System.out.println("Inserta el identificador del usuario a borrar:");
+        String opcion = scannerBorrado.nextLine(); // Leer identificador
 
         Iterator<Usuario> it = listaUsuarios.iterator();
         boolean eliminado = false;
         while (it.hasNext()) {
 
             Usuario usuario = it.next();
-            if (usuario.getIdentificador().equals(id)) {
+            if (usuario.getIdentificador().equals(opcion)) {
                 it.remove();
                 eliminado = true;
                 System.out.println("Usuario eliminado correctamente.");
@@ -87,6 +96,7 @@ public class GestionUsuario {
                 System.out.println("Usuario no encontrado.");
             }
         }
+
     }
 
 }

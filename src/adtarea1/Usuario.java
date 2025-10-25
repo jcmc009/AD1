@@ -13,7 +13,6 @@ import java.util.ArrayList;
  */
 public class Usuario {
 
-    ArrayList<Usuario> listaUsuarios = new ArrayList<>();
     private String identificador, contrasenya, direccion;
     private int anyoNacimiento;
 
@@ -61,7 +60,7 @@ public class Usuario {
 
     @Override
     public String toString() {
-        return "Usuario{"
+        return "Usuario: {"
                 + "identificador='" + identificador + '\''
                 + "contraseña='" + contrasenya + '\''
                 + ", direccion='" + direccion + '\''

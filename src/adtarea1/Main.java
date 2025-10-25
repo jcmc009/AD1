@@ -48,7 +48,7 @@ public class Main {
                     gestor.agregarUsuario();
                     break;
                 case 2:
-                    borrar(gestor);
+                    gestor.borrarUsuario();
                     break;
                 case 3:
                     System.out.println("Autor: José, estudiante de DAM.");
@@ -74,52 +74,4 @@ public class Main {
 
     }
 
-    public static void borrar(GestionUsuario gestor) {
-        Scanner scannerBorrado = new Scanner(System.in); // Crear scanner local para esta operación
-
-        System.out.println("Inserta el identificador del usuario a borrar:");
-        String opcion = scannerBorrado.nextLine(); // Leer identificador
-
-        gestor.eliminarUsuarioPorId(opcion);
-
-        // No cierres el scanner si vas a seguir usando System.in en otros métodos
-        // scannerBorrado.close(); ← solo si no se usa más adelante
-    }
-
-//    public static void agregar(GestionUsuario gestor) {
-//        Scanner scannerAgregar = new Scanner(System.in);
-//        String id = "";
-//
-//        do {
-//            System.out.print("Inserta el identificador del usuario a agregar: ");
-//            id = scannerAgregar.nextLine();
-//        } while (id.isEmpty());
-//
-//        System.out.print("Inserta la contraseña del usuario a agregar: ");
-//        String contrasenya = scannerAgregar.nextLine();
-//
-//        System.out.print("Inserta la dirección del usuario a agregar: ");
-//        String direccion = scannerAgregar.nextLine();
-//
-//        boolean entradaValida = false;
-//        int anyoNacimiento = 0;
-//        while (!entradaValida) {
-//            System.out.print("Inserta el año de nacimiento del usuario a agregar: ");
-//            String entrada = scannerAgregar.nextLine();
-//            try {
-//                anyoNacimiento = Integer.parseInt(entrada);
-//                if (anyoNacimiento >= 0) {
-//                    entradaValida = true;
-//                } else {
-//                    System.out.println("Año no válido");
-//                }
-//
-//            } catch (NumberFormatException e) {
-//                System.out.println("Entrada no válida. Por favor, introduce un número entero.");
-//            }
-//        }
-//
-//        gestor.agregarUsuario(id, contrasenya, direccion, anyoNacimiento);
-//        System.out.println("Usuario agregado correctamente.");
-//    }
 }
