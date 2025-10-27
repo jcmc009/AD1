@@ -20,24 +20,25 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
+ * Clase que gestiona una lista de objetos Usuario, permitiendo agregar, borrar,
+ * mostrar, guardar y cargar usuarios desde archivos binarios o de texto.
  *
- * @author Jc
+ * @author José Carlos Manjón Carrasco
  */
 public class GestionUsuario {
 
-//    Scanner scanner = new Scanner(System.in);
-//"Usuario{"
-//                + "identificador='" + identificador + '\''
-//                + "contraseña='" + contrasenya + '\''
-//                + ", direccion='" + direccion + '\''
-//                + ", añoNacimiento=" + anyoNacimiento
-//                + '}';
-    private List<Usuario> usuarios; // Lista de objetos usuario 
+    // Lista principal de usuarios en memoria
+    private List<Usuario> usuarios;
+    // Identificador de versión para la serialización
     private static final long serialVersionUID = 42L;
+
+    // Rutas de los archivos
     private String rutaArchivoDat = System.getProperty("user.dir") + "/resources/Usuario.dat";
     private String rutaArchivoTxt = System.getProperty("user.dir") + "/resources/Usuario.txt";
+    // Indicador de si hay cambios sin guardar
     private boolean cambiosPendientes = false;
 
+    // Métodos para controlar el estado de cambios
     public boolean hayCambiosPendientes() {
         return cambiosPendientes;
     }
@@ -51,7 +52,7 @@ public class GestionUsuario {
     }
 
     /**
-     * Crea un objeto usuario vacío.
+     * Constructor por defecto: inicializa la lista de usuarios vacía.
      */
     public GestionUsuario() {
         usuarios = new ArrayList<>();
@@ -62,32 +63,39 @@ public class GestionUsuario {
     }
 
     /**
-     * Método constructor
-     *
-     * Ruta del archivo donde se lee y escribe el objeto Usuario
-     *
+     * Constructor alternativo que permite establecer una ruta personalizada
+     * para el archivo binario.
      */
     public GestionUsuario(String archivo) {
         this.rutaArchivoDat = archivo;
     }
 
+    /**
+     * Solicita los datos de un nuevo usuario por consola y lo agrega a la
+     * lista.
+     */
     public void agregarUsuario() {
         Scanner scannerAgregar = new Scanner(System.in);
-        String id = "";
-
+        String id = "", contrasenya = "", direccion = "";
+        int anyoNacimiento = 0;
+// Validación de identificador no vacío
         do {
             System.out.print("Inserta el identificador del usuario a agregar: ");
             id = scannerAgregar.nextLine();
         } while (id.isEmpty());
+// Captura de datos restantes
+        do {
+            System.out.print("Inserta la contraseña del usuario a agregar: ");
+            contrasenya = scannerAgregar.nextLine();
+        } while (contrasenya.isEmpty());
 
-        System.out.print("Inserta la contraseña del usuario a agregar: ");
-        String contrasenya = scannerAgregar.nextLine();
-
-        System.out.print("Inserta la dirección del usuario a agregar: ");
-        String direccion = scannerAgregar.nextLine();
+        do {
+            System.out.print("Inserta la dirección del usuario a agregar: ");
+            direccion = scannerAgregar.nextLine();
+        } while (direccion.isEmpty());
 
         boolean entradaValida = false;
-        int anyoNacimiento = 0;
+        // Validación de año de nacimiento
         while (!entradaValida) {
             System.out.print("Inserta el año de nacimiento del usuario a agregar: ");
             String entrada = scannerAgregar.nextLine();
@@ -103,14 +111,17 @@ public class GestionUsuario {
                 System.out.println("Entrada no válida. Por favor, introduce un número entero.");
             }
         }
-
+        // Creación y almacenamiento del usuario
         Usuario user = new Usuario(id, contrasenya, direccion, anyoNacimiento);
-        usuarios.add(user); // ← Aquí se guarda en la lista
-        marcarCambios();
+        usuarios.add(user); // Aquí se guarda en la lista
+        marcarCambios();//Marcamos que hay cambios pendientes, pues acabamos de agregar un usuario
         System.out.println("Usuario agregado correctamente.");
 
     }
 
+    /**
+     * Muestra por consola todos los usuarios almacenados en la lista.
+     */
     public void leerConsola() {
         System.out.println("Hay los siguientes usuarios en el sistema:");
         if (usuarios.isEmpty()) {
@@ -123,11 +134,15 @@ public class GestionUsuario {
         }
     }
 
+    /**
+     * Solicita un identificador y elimina el usuario correspondiente de la
+     * lista.
+     */
     public void borrarUsuario() {
         Scanner scannerBorrado = new Scanner(System.in); // Crear scanner local para esta operación
 
         System.out.println("Inserta el identificador del usuario a borrar:");
-        String opcion = scannerBorrado.nextLine(); // Leer identificador
+        String opcion = scannerBorrado.nextLine();
 
         Iterator<Usuario> it = usuarios.iterator();
         boolean eliminado = false;
@@ -148,6 +163,10 @@ public class GestionUsuario {
 
     }
 
+    /**
+     * Carga la lista de usuarios desde el archivo binario, previa confirmación
+     * si hay cambios sin guardar.
+     */
     public List<Usuario> leerListaDat() {
         if (cambiosPendientes) {
             System.out.println("Se ha realizado cambios que no ha guardado en disco.");
@@ -203,31 +222,32 @@ public class GestionUsuario {
     }
 
     /**
-     * Método que escribe, en un archivo binario, un objeto Usuario
-     * serializable.
+     * Guarda la lista de usuarios en un archivo binario. Si no existe, lo crea
      *
-     * @param Usuario Objeto Usuario serializable para almacenar en el archivo
-     * binario.
+     */
+    /**
+     * Guarda la lista de usuarios en un archivo binario (.dat). Si la operación
+     * es exitosa, se limpia el indicador de cambios pendientes.
+     *
+     * @param listaUsuarios Lista de usuarios a guardar
      */
     public void escribirListaDat(List<Usuario> listaUsuarios) throws IOException {
         File archivo = new File(rutaArchivoDat);
+        FileOutputStream fichero = new FileOutputStream(new File(rutaArchivoDat));
+        ObjectOutputStream ficheroSalida = new ObjectOutputStream(fichero); // Escribo el objeto usuario en el fichero 
         try {
-
-            if (!archivo.exists()) {
-
-                // Abrir fichero para escribirListaDat en él, en la ruta que me interesa
-                FileOutputStream fichero = new FileOutputStream(new File(rutaArchivoDat));
-                ObjectOutputStream ficheroSalida = new ObjectOutputStream(fichero);
-
-                // Escribo el objeto usuario en el fichero
-                ficheroSalida.writeObject(listaUsuarios);
-
-                // Cierro el fichero
+            if (!archivo.exists()) { // Abrir fichero para escribirListaDat en él, en la ruta que me interesa 
+//                FileOutputStream fichero = new FileOutputStream(new File(rutaArchivoDat));
+//                ObjectOutputStream ficheroSalida = new ObjectOutputStream(fichero); // Escribo el objeto usuario en el fichero 
+                ficheroSalida.writeObject(listaUsuarios); // Cierro el fichero 
                 ficheroSalida.close();
                 System.out.println("No hay datos previos,se creará un archivo en " + rutaArchivoDat);
                 limpiarCambios();
             } else {
-                leerListaDat();//cargamos los datos existentes
+                ficheroSalida.writeObject(listaUsuarios); // Cierro el fichero 
+                ficheroSalida.close();
+                // System.out.println("No hay datos previos,se creará un archivo en " + rutaArchivoDat);
+                limpiarCambios();
             }
         } catch (FileNotFoundException ex) {
             System.out.println(ex.getMessage());

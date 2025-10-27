@@ -10,9 +10,9 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Jc
+ * @author José Carlos Manjón Carrasco
  */
-public class Usuario implements Serializable{
+public class Usuario implements Serializable {
 
     private String identificador, contrasenya, direccion;
     private int anyoNacimiento;

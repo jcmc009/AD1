@@ -6,11 +6,12 @@
 package adtarea1;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 /**
  *
- * @author Jc
+ * @author José Carlos Manjón Carrasco
  */
 public class Main {
 
@@ -52,10 +53,24 @@ public class Main {
                     gestor.borrarUsuario();
                     break;
                 case 3:
-                    gestor.escribirListaDat(gestor.getUsuarios());
+                    try {
+                        gestor.escribirListaDat(gestor.getUsuarios());
+                        System.out.println("Lista guardada correctamente.");
+                    } catch (IOException e) {
+                        System.out.println("Error al guardar la lista: " + e.getMessage());
+                    }
                     break;
                 case 4:
-                    gestor.leerListaDat();
+                    List<Usuario> usuariosCargados = gestor.leerListaDat(); // intenta cargar desde archivo
+
+                    // Si la lista cargada es distinta de la actual, se actualiza
+                    if (usuariosCargados != gestor.getUsuarios()) {
+                        gestor.getUsuarios().clear();
+                        gestor.getUsuarios().addAll(usuariosCargados);
+                        System.out.println("Lista de usuarios restaurada desde el archivo.");
+                    } else {
+                        System.out.println("No se ha realizado la carga. La lista actual se mantiene.");
+                    }
                     break;
                 case 5:
                     gestor.leerConsola();
@@ -67,7 +82,6 @@ public class Main {
                     if (gestor.comprobarCambiosPendientes()) {
                         salirSinGuardar = true;
                     }
-
                     break;
                 default:
                     System.out.println("Opción no válida. Intente de nuevo.");
