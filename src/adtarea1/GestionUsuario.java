@@ -5,8 +5,18 @@
  */
 package adtarea1;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -15,14 +25,51 @@ import java.util.Scanner;
  */
 public class GestionUsuario {
 
-    Scanner scanner = new Scanner(System.in);
-    ArrayList<Usuario> listaUsuarios = new ArrayList<>();
+//    Scanner scanner = new Scanner(System.in);
 //"Usuario{"
 //                + "identificador='" + identificador + '\''
 //                + "contraseña='" + contrasenya + '\''
 //                + ", direccion='" + direccion + '\''
 //                + ", añoNacimiento=" + anyoNacimiento
 //                + '}';
+    private List<Usuario> usuarios; // Lista de objetos usuario 
+    private static final long serialVersionUID = 42L;
+    private String rutaArchivoDat = System.getProperty("user.dir") + "/resources/Usuario.dat";
+    private String rutaArchivoTxt = System.getProperty("user.dir") + "/resources/Usuario.txt";
+    private boolean cambiosPendientes = false;
+
+    public boolean hayCambiosPendientes() {
+        return cambiosPendientes;
+    }
+
+    public void marcarCambios() {
+        cambiosPendientes = true;
+    }
+
+    public void limpiarCambios() {
+        cambiosPendientes = false;
+    }
+
+    /**
+     * Crea un objeto usuario vacío.
+     */
+    public GestionUsuario() {
+        usuarios = new ArrayList<>();
+    }
+
+    public List<Usuario> getUsuarios() {
+        return usuarios;
+    }
+
+    /**
+     * Método constructor
+     *
+     * Ruta del archivo donde se lee y escribe el objeto Usuario
+     *
+     */
+    public GestionUsuario(String archivo) {
+        this.rutaArchivoDat = archivo;
+    }
 
     public void agregarUsuario() {
         Scanner scannerAgregar = new Scanner(System.in);
@@ -58,18 +105,19 @@ public class GestionUsuario {
         }
 
         Usuario user = new Usuario(id, contrasenya, direccion, anyoNacimiento);
-        listaUsuarios.add(user);
+        usuarios.add(user); // ← Aquí se guarda en la lista
+        marcarCambios();
         System.out.println("Usuario agregado correctamente.");
 
     }
 
-    public void mostrarUsuarios() {
+    public void leerConsola() {
         System.out.println("Hay los siguientes usuarios en el sistema:");
-        if (listaUsuarios.isEmpty()) {
+        if (usuarios.isEmpty()) {
             System.out.println("No hay usuarios a mostrar");
 
         } else {
-            for (Usuario usuario : listaUsuarios) {
+            for (Usuario usuario : usuarios) {
                 System.out.println(usuario);
             }
         }
@@ -81,7 +129,7 @@ public class GestionUsuario {
         System.out.println("Inserta el identificador del usuario a borrar:");
         String opcion = scannerBorrado.nextLine(); // Leer identificador
 
-        Iterator<Usuario> it = listaUsuarios.iterator();
+        Iterator<Usuario> it = usuarios.iterator();
         boolean eliminado = false;
         while (it.hasNext()) {
 
@@ -90,6 +138,7 @@ public class GestionUsuario {
                 it.remove();
                 eliminado = true;
                 System.out.println("Usuario eliminado correctamente.");
+                marcarCambios();
                 break; // salir del bucle tras eliminar
             }
             if (!eliminado) {
@@ -97,6 +146,147 @@ public class GestionUsuario {
             }
         }
 
+    }
+
+    public List<Usuario> leerListaDat() {
+        if (cambiosPendientes) {
+            System.out.println("Se ha realizado cambios que no ha guardado en disco.");
+            System.out.println("Si continúa la carga del archivo se restaurarán los datos de disco y se perderán los cambios no guardados.");
+            System.out.print("¿Desea continuar con la carga y restaurar los datos del archivo? (s/n): ");
+
+            Scanner scanner = new Scanner(System.in);
+            String respuesta = scanner.nextLine().trim().toLowerCase();
+
+            while (!respuesta.equals("s") && !respuesta.equals("n")) {
+                System.out.print("Respuesta no válida. Introduzca 's' para continuar o 'n' para cancelar: ");
+                respuesta = scanner.nextLine().trim().toLowerCase();
+            }
+
+            if (respuesta.equals("n")) {
+                System.out.println("Carga cancelada. Vuelva al menú para guardar los cambios si lo desea.");
+                return usuarios; // mantiene la lista actual sin sobrescribir
+            }
+        }
+        try {
+            FileInputStream fichero = new FileInputStream(rutaArchivoDat);
+            ObjectInputStream objetostream = new ObjectInputStream(fichero);
+            Object objeto = objetostream.readObject();
+            objetostream.close();
+
+            if (objeto instanceof List<?>) {
+                List<?> lista = (List<?>) objeto;
+
+                if (!lista.isEmpty() && lista.get(0) instanceof Usuario) {
+                    List<Usuario> listaUsuarios = new ArrayList<>();
+                    for (Object o : lista) {
+                        listaUsuarios.add((Usuario) o);
+                    }
+
+                    System.out.println("Leo del archivo USUARIO.dat");
+                    System.out.println("LISTADO DE USUARIOS GUARDADOS EN EL FICHERO:");
+                    for (Usuario u : listaUsuarios) {
+                        System.out.println(u);
+                    }
+
+                    return listaUsuarios;
+                } else {
+                    System.out.println("La lista no contiene objetos de tipo Usuario.");
+                }
+            } else {
+                System.out.println("El objeto leído no es una lista.");
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error al leer el archivo: " + ex.getMessage());
+        }
+
+        return new ArrayList<>(); // Devuelve lista vacía si falla
+    }
+
+    /**
+     * Método que escribe, en un archivo binario, un objeto Usuario
+     * serializable.
+     *
+     * @param Usuario Objeto Usuario serializable para almacenar en el archivo
+     * binario.
+     */
+    public void escribirListaDat(List<Usuario> listaUsuarios) throws IOException {
+        File archivo = new File(rutaArchivoDat);
+        try {
+
+            if (!archivo.exists()) {
+
+                // Abrir fichero para escribirListaDat en él, en la ruta que me interesa
+                FileOutputStream fichero = new FileOutputStream(new File(rutaArchivoDat));
+                ObjectOutputStream ficheroSalida = new ObjectOutputStream(fichero);
+
+                // Escribo el objeto usuario en el fichero
+                ficheroSalida.writeObject(listaUsuarios);
+
+                // Cierro el fichero
+                ficheroSalida.close();
+                System.out.println("No hay datos previos,se creará un archivo en " + rutaArchivoDat);
+                limpiarCambios();
+            } else {
+                leerListaDat();//cargamos los datos existentes
+            }
+        } catch (FileNotFoundException ex) {
+            System.out.println(ex.getMessage());
+        } catch (IOException ex) {
+            System.out.println("Error al escribir: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Método que escribe, en un archivo binario, un objeto Usuario
+     * serializable.
+     *
+     * @param Usuario Objeto Usuario serializable para almacenar en el archivo
+     * binario.
+     */
+    public void escribirListaTxt(List<Usuario> listaUsuarios) throws IOException {
+        File archivo = new File(rutaArchivoTxt);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivo))) {
+            if (!archivo.exists()) {
+                System.out.println("No hay datos previos, se creará un archivo en " + rutaArchivoTxt);
+            }
+
+            for (Usuario usuario : listaUsuarios) {
+                writer.write(usuario.toString());
+                writer.newLine(); // salto de línea entre usuarios
+            }
+
+            System.out.println("Lista de usuarios guardada como texto en " + rutaArchivoTxt);
+        } catch (IOException ex) {
+            System.out.println("Error al escribir en archivo de texto: " + ex.getMessage());
+
+        }
+
+    }
+
+    public boolean comprobarCambiosPendientes() {
+        if (cambiosPendientes) {
+            System.out.println("Ha habido cambios en el programa que todavía no se han guardado.");
+            System.out.println("Si desea guardarlos, ejecute la opción correspondiente del menú.");
+            System.out.println("Si sale ahora, los cambios se perderán.");
+            System.out.print("¿Está seguro de que desea salir sin guardar? (s/n): ");
+
+            Scanner scanner = new Scanner(System.in);
+            String respuesta = scanner.nextLine().trim().toLowerCase();
+
+            while (!respuesta.equals("s") && !respuesta.equals("n")) {
+                System.out.print("Respuesta no válida. Introduzca 's' para salir o 'n' para volver al menú: ");
+                respuesta = scanner.nextLine().trim().toLowerCase();
+            }
+
+            if (respuesta.equals("n")) {
+                System.out.println("Cancelando salida. Vuelva al menú para guardar los cambios.");
+                return false; // no salir
+            }
+        }
+
+        System.out.println("Saliendo del programa...");
+        return true; // salir
     }
 
 }

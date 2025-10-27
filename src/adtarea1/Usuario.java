@@ -5,13 +5,14 @@
  */
 package adtarea1;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  *
  * @author Jc
  */
-public class Usuario {
+public class Usuario implements Serializable{
 
     private String identificador, contrasenya, direccion;
     private int anyoNacimiento;

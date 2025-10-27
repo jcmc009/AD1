@@ -5,6 +5,7 @@
  */
 package adtarea1;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 /**
@@ -16,12 +17,12 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        Scanner scannerBorrado = new Scanner(System.in);
         int opcion = 10;
-        Usuario nuevoUsuarioDos = new Usuario("1", "ds2", "dsds", 1990);
+        boolean salirSinGuardar = false;
         GestionUsuario gestor = new GestionUsuario();
+
         do {
             System.out.println("\n--- MENÚ PRINCIPAL ---");
             System.out.println("1. Agregar un usuario a la lista de usuarios.");
@@ -51,26 +52,28 @@ public class Main {
                     gestor.borrarUsuario();
                     break;
                 case 3:
-                    System.out.println("Autor: José, estudiante de DAM.");
+                    gestor.escribirListaDat(gestor.getUsuarios());
                     break;
                 case 4:
-                    System.out.println("Módulo actual: Desarrollo de Interfaces.");
+                    gestor.leerListaDat();
                     break;
                 case 5:
-
-                    gestor.mostrarUsuarios();
+                    gestor.leerConsola();
                     break;
                 case 6:
-                    System.out.println(nuevoUsuarioDos.toString());
+                    gestor.escribirListaTxt(gestor.getUsuarios());
                     break;
                 case 0:
-                    System.out.println("Saliendo del programa...");
+                    if (gestor.comprobarCambiosPendientes()) {
+                        salirSinGuardar = true;
+                    }
+
                     break;
                 default:
                     System.out.println("Opción no válida. Intente de nuevo.");
             }
 
-        } while (opcion != 0);
+        } while (!salirSinGuardar);
 
     }
 
