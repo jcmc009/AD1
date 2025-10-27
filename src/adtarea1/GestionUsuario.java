@@ -156,9 +156,10 @@ public class GestionUsuario {
                 marcarCambios();
                 break; // salir del bucle tras eliminar
             }
-            if (!eliminado) {
-                System.out.println("Usuario no encontrado.");
-            }
+
+        }
+        if (!eliminado) {
+            System.out.println("Usuario no encontrado.");
         }
 
     }
@@ -168,11 +169,12 @@ public class GestionUsuario {
      * si hay cambios sin guardar.
      */
     public List<Usuario> leerListaDat() {
+        // Verifica si hay cambios pendientes antes de cargar
         if (cambiosPendientes) {
             System.out.println("Se ha realizado cambios que no ha guardado en disco.");
             System.out.println("Si continúa la carga del archivo se restaurarán los datos de disco y se perderán los cambios no guardados.");
             System.out.print("¿Desea continuar con la carga y restaurar los datos del archivo? (s/n): ");
-
+            // Captura y valida la respuesta del usuario
             Scanner scanner = new Scanner(System.in);
             String respuesta = scanner.nextLine().trim().toLowerCase();
 
@@ -180,29 +182,29 @@ public class GestionUsuario {
                 System.out.print("Respuesta no válida. Introduzca 's' para continuar o 'n' para cancelar: ");
                 respuesta = scanner.nextLine().trim().toLowerCase();
             }
-
+            // Si el usuario cancela, se mantiene la lista actual
             if (respuesta.equals("n")) {
                 System.out.println("Carga cancelada. Vuelva al menú para guardar los cambios si lo desea.");
                 return usuarios; // mantiene la lista actual sin sobrescribir
             }
         }
+        // Intenta leer el archivo binario
         try {
             FileInputStream fichero = new FileInputStream(rutaArchivoDat);
             ObjectInputStream objetostream = new ObjectInputStream(fichero);
             Object objeto = objetostream.readObject();
             objetostream.close();
-
+// Intenta leer el archivo binario
             if (objeto instanceof List<?>) {
                 List<?> lista = (List<?>) objeto;
-
+// Verifica que la lista contenga objetos de tipo Usuario
                 if (!lista.isEmpty() && lista.get(0) instanceof Usuario) {
                     List<Usuario> listaUsuarios = new ArrayList<>();
                     for (Object o : lista) {
                         listaUsuarios.add((Usuario) o);
                     }
-
-                    System.out.println("Leo del archivo USUARIO.dat");
-                    System.out.println("LISTADO DE USUARIOS GUARDADOS EN EL FICHERO:");
+// Muestra los usuarios cargados
+                    System.out.println("Leo del archivo USUARIO.dat\nListado de Usuarios guarddados en el fichero :");
                     for (Usuario u : listaUsuarios) {
                         System.out.println(u);
                     }
@@ -217,14 +219,10 @@ public class GestionUsuario {
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error al leer el archivo: " + ex.getMessage());
         }
-
+// Si ocurre un error o el archivo no es válido, se devuelve una lista vacía
         return new ArrayList<>(); // Devuelve lista vacía si falla
     }
 
-    /**
-     * Guarda la lista de usuarios en un archivo binario. Si no existe, lo crea
-     *
-     */
     /**
      * Guarda la lista de usuarios en un archivo binario (.dat). Si la operación
      * es exitosa, se limpia el indicador de cambios pendientes.
@@ -232,22 +230,33 @@ public class GestionUsuario {
      * @param listaUsuarios Lista de usuarios a guardar
      */
     public void escribirListaDat(List<Usuario> listaUsuarios) throws IOException {
-        File archivo = new File(rutaArchivoDat);
+        // Ruta del archivo donde se guardará la lista
+        File archivoDat = new File(rutaArchivoDat);
+        // Crea los flujos de salida para escribir el archivo binario
         FileOutputStream fichero = new FileOutputStream(new File(rutaArchivoDat));
         ObjectOutputStream ficheroSalida = new ObjectOutputStream(fichero); // Escribo el objeto usuario en el fichero 
+        // Verifica si la lista está vacía o nula antes de intentar guardar
+        if (listaUsuarios == null || listaUsuarios.isEmpty()) {
+            System.out.println("La lista de usuarios está vacía. No se puede guardar.");
+            return;
+        }
         try {
-            if (!archivo.exists()) { // Abrir fichero para escribirListaDat en él, en la ruta que me interesa 
-//                FileOutputStream fichero = new FileOutputStream(new File(rutaArchivoDat));
-//                ObjectOutputStream ficheroSalida = new ObjectOutputStream(fichero); // Escribo el objeto usuario en el fichero 
-                ficheroSalida.writeObject(listaUsuarios); // Cierro el fichero 
+            // Mensaje según si el archivo existía previamente
+            if (!archivoDat.exists()) { // Abrir fichero para escribirListaDat en él, en la ruta que me interesa 
+                // Escribe el objeto (lista de usuarios) en el archivo
+                ficheroSalida.writeObject(listaUsuarios);
+                // Cierro el fichero 
                 ficheroSalida.close();
                 System.out.println("No hay datos previos,se creará un archivo en " + rutaArchivoDat);
+                // Limpia el indicador de cambios pendientes
                 limpiarCambios();
+                System.out.println("Lista guardada correctamente.");
             } else {
                 ficheroSalida.writeObject(listaUsuarios); // Cierro el fichero 
                 ficheroSalida.close();
                 // System.out.println("No hay datos previos,se creará un archivo en " + rutaArchivoDat);
                 limpiarCambios();
+                System.out.println("Lista guardada correctamente.");
             }
         } catch (FileNotFoundException ex) {
             System.out.println(ex.getMessage());
@@ -265,7 +274,10 @@ public class GestionUsuario {
      */
     public void escribirListaTxt(List<Usuario> listaUsuarios) throws IOException {
         File archivo = new File(rutaArchivoTxt);
-
+        if (listaUsuarios == null || listaUsuarios.isEmpty()) {
+            System.out.println("La lista de usuarios está vacía. No se puede guardar.");
+            return;
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivo))) {
             if (!archivo.exists()) {
                 System.out.println("No hay datos previos, se creará un archivo en " + rutaArchivoTxt);
@@ -307,6 +319,35 @@ public class GestionUsuario {
 
         System.out.println("Saliendo del programa...");
         return true; // salir
+    }
+
+    void comprobarAntesCargar() {
+        List<Usuario> usuariosCargados = leerListaDat(); // intenta cargar desde archivo
+
+        // Si la lista cargada es distinta de la actual, se actualiza
+        if (usuariosCargados != getUsuarios()) {
+            getUsuarios().clear();
+            getUsuarios().addAll(usuariosCargados);
+
+        } else {
+            System.out.println("No se ha realizado la carga. La lista actual se mantiene.");
+        }
+    }
+
+    void comprobarAntesGuardar() {
+        List<Usuario> lista = getUsuarios();
+
+        if (lista == null || lista.isEmpty()) {
+            System.out.println("La lista de usuarios está vacía. No se puede guardar.");
+            return;
+        }
+
+        try {
+            escribirListaDat(lista);
+            System.out.println("Lista de usuarios guardada correctamente.");
+        } catch (IOException e) {
+            System.out.println("Error al guardar la lista: " + e.getMessage());
+        }
     }
 
 }

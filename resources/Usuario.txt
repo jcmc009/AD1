@@ -1,5 +1,0 @@
-Usuario: {identificador='1'contraseña='1', direccion='1', añoNacimiento=1}
-Usuario: {identificador='1'contraseña='1', direccion='11', añoNacimiento=11}
-Usuario: {identificador='1'contraseña='1', direccion='1', añoNacimiento=1}
-Usuario: {identificador='1'contraseña='1', direccion='1', añoNacimiento=1}
-Usuario: {identificador='1'contraseña='1', direccion='1', añoNacimiento=1}

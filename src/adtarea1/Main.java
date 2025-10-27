@@ -53,24 +53,10 @@ public class Main {
                     gestor.borrarUsuario();
                     break;
                 case 3:
-                    try {
-                        gestor.escribirListaDat(gestor.getUsuarios());
-                        System.out.println("Lista guardada correctamente.");
-                    } catch (IOException e) {
-                        System.out.println("Error al guardar la lista: " + e.getMessage());
-                    }
+                    gestor.comprobarAntesGuardar();
                     break;
                 case 4:
-                    List<Usuario> usuariosCargados = gestor.leerListaDat(); // intenta cargar desde archivo
-
-                    // Si la lista cargada es distinta de la actual, se actualiza
-                    if (usuariosCargados != gestor.getUsuarios()) {
-                        gestor.getUsuarios().clear();
-                        gestor.getUsuarios().addAll(usuariosCargados);
-                        System.out.println("Lista de usuarios restaurada desde el archivo.");
-                    } else {
-                        System.out.println("No se ha realizado la carga. La lista actual se mantiene.");
-                    }
+                    gestor.comprobarAntesCargar();
                     break;
                 case 5:
                     gestor.leerConsola();
