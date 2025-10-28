@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package adtarea1;
+package Tarea;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -17,10 +16,11 @@ public class Main {
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        int opcion = 10;
+        int opcion;
         boolean salirSinGuardar = false;
         GestionUsuario gestor = new GestionUsuario();
 

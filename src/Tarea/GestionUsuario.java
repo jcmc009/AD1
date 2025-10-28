@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package adtarea1;
+package Tarea;
 
+import Tarea.Usuario;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -88,12 +89,10 @@ public class GestionUsuario {
             System.out.print("Inserta la contraseña del usuario a agregar: ");
             contrasenya = scannerAgregar.nextLine();
         } while (contrasenya.isEmpty());
-
         do {
             System.out.print("Inserta la dirección del usuario a agregar: ");
             direccion = scannerAgregar.nextLine();
         } while (direccion.isEmpty());
-
         boolean entradaValida = false;
         // Validación de año de nacimiento
         while (!entradaValida) {
@@ -101,12 +100,11 @@ public class GestionUsuario {
             String entrada = scannerAgregar.nextLine();
             try {
                 anyoNacimiento = Integer.parseInt(entrada);
-                if (anyoNacimiento >= 0) {
+                if (anyoNacimiento >= 1925) {
                     entradaValida = true;
                 } else {
                     System.out.println("Año no válido");
                 }
-
             } catch (NumberFormatException e) {
                 System.out.println("Entrada no válida. Por favor, introduce un número entero.");
             }
@@ -116,7 +114,6 @@ public class GestionUsuario {
         usuarios.add(user); // Aquí se guarda en la lista
         marcarCambios();//Marcamos que hay cambios pendientes, pues acabamos de agregar un usuario
         System.out.println("Usuario agregado correctamente.");
-
     }
 
     /**
@@ -224,48 +221,6 @@ public class GestionUsuario {
     }
 
     /**
-     * Guarda la lista de usuarios en un archivo binario (.dat). Si la operación
-     * es exitosa, se limpia el indicador de cambios pendientes.
-     *
-     * @param listaUsuarios Lista de usuarios a guardar
-     */
-    public void escribirListaDat(List<Usuario> listaUsuarios) throws IOException {
-        // Ruta del archivo donde se guardará la lista
-        File archivoDat = new File(rutaArchivoDat);
-        // Crea los flujos de salida para escribir el archivo binario
-        FileOutputStream fichero = new FileOutputStream(new File(rutaArchivoDat));
-        ObjectOutputStream ficheroSalida = new ObjectOutputStream(fichero); // Escribo el objeto usuario en el fichero 
-        // Verifica si la lista está vacía o nula antes de intentar guardar
-        if (listaUsuarios == null || listaUsuarios.isEmpty()) {
-            System.out.println("La lista de usuarios está vacía. No se puede guardar.");
-            return;
-        }
-        try {
-            // Mensaje según si el archivo existía previamente
-            if (!archivoDat.exists()) { // Abrir fichero para escribirListaDat en él, en la ruta que me interesa 
-                // Escribe el objeto (lista de usuarios) en el archivo
-                ficheroSalida.writeObject(listaUsuarios);
-                // Cierro el fichero 
-                ficheroSalida.close();
-                System.out.println("No hay datos previos,se creará un archivo en " + rutaArchivoDat);
-                // Limpia el indicador de cambios pendientes
-                limpiarCambios();
-                System.out.println("Lista guardada correctamente.");
-            } else {
-                ficheroSalida.writeObject(listaUsuarios); // Cierro el fichero 
-                ficheroSalida.close();
-                // System.out.println("No hay datos previos,se creará un archivo en " + rutaArchivoDat);
-                limpiarCambios();
-                System.out.println("Lista guardada correctamente.");
-            }
-        } catch (FileNotFoundException ex) {
-            System.out.println(ex.getMessage());
-        } catch (IOException ex) {
-            System.out.println("Error al escribir: " + ex.getMessage());
-        }
-    }
-
-    /**
      * Método que escribe, en un archivo binario, un objeto Usuario
      * serializable.
      *
@@ -335,19 +290,37 @@ public class GestionUsuario {
     }
 
     void comprobarAntesGuardar() {
-        List<Usuario> lista = getUsuarios();
-
-        if (lista == null || lista.isEmpty()) {
+        List<Usuario> listaUsuarios = getUsuarios();
+        // Verifica si la lista está vacía o nula
+        if (listaUsuarios == null || listaUsuarios.isEmpty()) {
             System.out.println("La lista de usuarios está vacía. No se puede guardar.");
             return;
         }
+        // Ruta del archivo donde se guardará la lista
+        File archivoDat = new File(rutaArchivoDat);
 
-        try {
-            escribirListaDat(lista);
-            System.out.println("Lista de usuarios guardada correctamente.");
-        } catch (IOException e) {
-            System.out.println("Error al guardar la lista: " + e.getMessage());
+        if (!archivoDat.exists()) {
+            System.out.println("No hay datos previos,se creará un archivo en " + rutaArchivoDat);
         }
+        try {
+            // Crea los flujos de salida para escribir el archivo binario
+            FileOutputStream fichero = new FileOutputStream(new File(rutaArchivoDat));//
+            ObjectOutputStream ficheroSalida = new ObjectOutputStream(fichero); // Escribo el objeto usuario en el fichero 
+
+            // Escribe el objeto (lista de usuarios) en el archivo
+            ficheroSalida.writeObject(listaUsuarios);
+            // Cierro el fichero 
+            ficheroSalida.close();
+            // Limpia el indicador de cambios pendientes
+            limpiarCambios();
+            System.out.println("Lista guardada correctamente.");
+
+        } catch (FileNotFoundException ex) {
+            System.out.println(ex.getMessage());
+        } catch (IOException ex) {
+            System.out.println("Error al escribir: " + ex.getMessage());
+        }
+
     }
 
 }
